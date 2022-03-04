@@ -1,7 +1,5 @@
 <?php
 
-app()->a = "hi";
-
-include 'other.php';
+echo (include 'other.php');
 
 ?>
