@@ -28,11 +28,16 @@ class App {
 
     private function include_files() {
         $this->loop_dir($this->Director()->dir("internal"));
-        $this->loop_dir($this->Director()->dir("routes"));
+        if (file_exists($this->Director()->dir("routes") . "/lazy_routes.php")) {
+            include $this->Director()->dir("routes") . "/lazy_routes.php";
+            return;
+        } else
+            $this->loop_dir($this->Director()->dir("routes"));
     }
 
     private function loop_dir($dir) {
         foreach (new FilesystemIterator($dir) as $t) {
+            if (str_ends_with($t->getFilename(), ".disabled.php")) continue;
             if ($t->getType() === "file") {
                 include_once $t->getPathname();
             } elseif ($t->getType() === "dir") {
