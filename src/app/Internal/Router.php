@@ -50,6 +50,8 @@ class Router {
         if (str_starts_with($uri, "/public")) {
             foreach (array_keys(Router::$routes["public"]) as $r) {
                 if ($uri == $r) {
+                    $content_type = "text/" . explode(".", $uri)[1];
+                    header("Content-Type: " . $content_type);
                     include_once Router::$routes["public"][$uri];
                     return true;
                 }
