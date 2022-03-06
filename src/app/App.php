@@ -23,6 +23,7 @@ class App {
 
     public function handle_error($code) {
         include(__BASE_URL__ . "/pages/error.php");
+        die();
     }
 
     private function create_director() {
