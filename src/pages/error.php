@@ -1,15 +1,13 @@
 <?php
 
-if (!isset($code)) {
+if (!isset($code) && !isset($_GET["code"])) {
     header("Location: https://sparib.com");
     die();
+} else if (!isset($code)) {
+    $code = $_GET["code"];
 }
 
-$headers = @get_headers("https://http.cat/" . $code);
-
-if($headers && strpos( $headers[0], '200'))
-    $link = "https://http.cat/" . $code;
-
+http_response_code($code);
 ?>
 
 <!DOCTYPE html>
@@ -19,8 +17,12 @@ if($headers && strpos( $headers[0], '200'))
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?=$code?> Error</title>
+    <link rel="stylesheet" href="/public/css/error.css">
 </head>
 <body>
-    <?php if (isset($link)): ?><img src="<?=$link?>" alt=""><?php endif ?>
+    <img src="<?='https://http.cat/' . $code?>" alt="">
+    <?php if (app()->Director()->error($code) != null): ?> <p><?=app()->Director()->error($code)?></p> <?php endif ?>
+
+
 </body>
 </html>

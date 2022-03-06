@@ -47,6 +47,7 @@ class Router {
      * @return bool
      */
     public static function fetch($uri) {
+        $uri = explode("?", $uri)[0];
         if (str_starts_with($uri, "/public")) {
             foreach (array_keys(Router::$routes["public"]) as $r) {
                 if ($uri == $r) {

@@ -1,5 +1,5 @@
 <?php
 
-app()->handle_error(404);
+app()->handle_error(502);
 
 ?>
