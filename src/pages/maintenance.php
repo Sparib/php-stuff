@@ -1,11 +1,22 @@
-<?php http_response_code(503) ?>
+<?php
+
+function isMobileDevice() {
+    return preg_match(
+        "/(android|avantgo|blackberry|bolt|boost|cricket|docomo|fone|hiptop|mini|mobi|palm|phone|pie|tablet|up\.browser|up\.link|webos|wos)/i",
+        $_SERVER["HTTP_USER_AGENT"]
+    );
+}
+
+// http_response_code(503);
+
+?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1">
     <title>Under Maintenance</title>
     <style>
         * {
@@ -59,6 +70,33 @@
             font-size: 18px;
         }
     </style>
+    <?php if (isMobileDevice()): ?>
+    <style>
+        body {
+            padding-left: 15px;
+        }
+
+        h1 {
+            font-size: 10vw;
+        }
+
+        p {
+            font-size: 4vw;
+        }
+
+        code {
+            font-size: 3vw;
+        }
+
+        .signature {
+            font-size: 5vw;
+        }
+
+        img {
+            display: none;
+        }
+    </style>
+    <?php endif ?>
 </head>
 <body>
     <h1>Currently Under Maintenance!</h1>
