@@ -9,7 +9,8 @@ class Director {
         "app" => __BASE_URL__ . "/app",
         "internal" => __BASE_URL__ . "/app/Internal",
         "pages" => __BASE_URL__ . "/pages",
-        "routes" => __BASE_URL__ . "/routes"
+        "routes" => __BASE_URL__ . "/routes",
+        "resources" => __BASE_URL__ . "/resources"
     ];
 
     public function dir($name) {

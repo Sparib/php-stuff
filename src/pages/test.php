@@ -1,5 +1,5 @@
 <?php
 
-echo (include 'other.php');
+app()->handle_error(404);
 
 ?>
