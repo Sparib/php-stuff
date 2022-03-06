@@ -44,7 +44,7 @@ class App {
 
     private function loop_dir($dir) {
         foreach (new FilesystemIterator($dir) as $t) {
-            if (str_ends_with($t->getFilename(), ".disabled.php")) continue;
+            if (preg_match("/\w*\.disabled\.\w*/", $t->getFilename())) continue;
             if ($t->getType() === "file") {
                 include_once $t->getPathname();
             } elseif ($t->getType() === "dir") {
