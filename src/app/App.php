@@ -55,6 +55,11 @@ class App {
     }
 
     private function get_page() {
+        if (file_exists($this->Director()->dir("pages") . "/maintenance.php")) {
+            include_once $this->Director()->dir("pages") . "/maintenance.php";
+            return;
+        }
+
         if (!Router::fetch($_SERVER["REQUEST_URI"]))
             $this->handle_error(404);
     }
