@@ -1,6 +1,7 @@
 <?php
 
 function isMobileDevice() {
+    if (!isset($_SERVER["HTTP_USER_AGENT"])) return false;
     return preg_match(
         "/(android|avantgo|blackberry|bolt|boost|cricket|docomo|fone|hiptop|mini|mobi|palm|phone|pie|tablet|up\.browser|up\.link|webos|wos)/i",
         $_SERVER["HTTP_USER_AGENT"]
@@ -95,6 +96,10 @@ function isMobileDevice() {
         img {
             display: none;
         }
+    </style>
+    <?php elseif (!isset($_SERVER["HTTP_USER_AGENT"])): ?>
+    <style>
+
     </style>
     <?php endif ?>
 </head>

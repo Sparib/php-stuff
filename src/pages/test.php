@@ -1,5 +1,5 @@
 <?php
 
-app()->handle_error(502);
+throw new Error("uh oh");
 
 ?>
