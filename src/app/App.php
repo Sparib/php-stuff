@@ -19,7 +19,6 @@ class App {
         $this->setup_error_handler();
 
         $this->create_director();
-        $this->director = null;
 
         $this->include_files();
 
