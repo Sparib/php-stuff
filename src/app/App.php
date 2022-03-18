@@ -2,45 +2,46 @@
 
 namespace app;
 
+use app\Handlers\ErrorHandler;
 use app\Internal\Router;
+use app\Internal\Director;
 use FilesystemIterator;
+use Http\Discovery\Exception\NotFoundException;
+use InvalidArgumentException;
 
 class App {
 
-    private $director = null;
+    public readonly Director $director;
+
+    private readonly ErrorHandler $error_handler;
 
     public function run() {
+        $this->setup_error_handler();
+
         $this->create_director();
+        $this->director = null;
 
         $this->include_files();
 
         $this->get_page();
     }
 
-    public function Director() {
-        return $this->director;
-    }
-
-    public function handle_error($code) {
-        include(__BASE_URL__ . "/pages/error.php");
-        die();
-    }
-
     private function create_director() {
         include_once __BASE_URL__ . '/app/Internal/Director.php';
-        $this->director = new Internal\Director();
+        $this->director = new Director();
     }
 
     private function include_files() {
-        $this->loop_dir($this->Director()->dir("internal"));
+        $this->loop_dir($this->director->dir("internal"));
+        $this->loop_dir($this->director->dir("handlers"));
 
-        include_once $this->Director()->dir("routes") . "/resources.php";
+        include_once $this->director->dir("routes") . "/resources.php";
         
-        if (file_exists($this->Director()->dir("routes") . "/lazy_routes.php")) {
-            include_once $this->Director()->dir("routes") . "/lazy_routes.php";
+        if (file_exists($this->director->dir("routes") . "/lazy_routes.php")) {
+            include_once $this->director->dir("routes") . "/lazy_routes.php";
             return;
         } else
-            $this->loop_dir($this->Director()->dir("routes"));
+            $this->loop_dir($this->director->dir("routes"));
     }
 
     private function loop_dir($dir) {
@@ -54,13 +55,24 @@ class App {
         }
     }
 
+    private function setup_error_handler() {
+        include_once __BASE_URL__ . "/app/Handlers/ErrorHandler.php";
+        $this->error_handler = new ErrorHandler();
+        set_exception_handler(array($this->error_handler, "global_handler"));
+        set_error_handler(array($this->error_handler, "global_error_handler"));
+    }
+
     private function get_page() {
-        if (file_exists($this->Director()->dir("pages") . "/maintenance.php")) {
-            include_once $this->Director()->dir("pages") . "/maintenance.php";
+        if (file_exists($this->director->dir("pages") . "/maintenance.php")) {
+            include_once $this->director->dir("pages") . "/maintenance.php";
             return;
         }
 
-        if (!Router::fetch($_SERVER["REQUEST_URI"]))
-            $this->handle_error(404);
+        $uri = Router::fetch($_SERVER["REQUEST_URI"]);
+
+        if (!$uri)
+            throw new InvalidArgumentException();
+        else
+            include_once $uri;
     }
 }

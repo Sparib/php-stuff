@@ -9,7 +9,7 @@ class Router {
 
     public static function get($uri, $fileName) {
         $name = (str_ends_with($fileName, ".php") ? $fileName : $fileName . ".php");
-        foreach (new FilesystemIterator(app()->Director()->dir("pages")) as $f) {
+        foreach (new FilesystemIterator(app()->director->dir("pages")) as $f) {
             if ($fileName == $f->getFilename()) {
                 Router::$routes["get"][$uri] = $f->getPathname();
             }
@@ -17,7 +17,7 @@ class Router {
     }
 
     public static function resource($uri, $fileName) {
-        $file = Router::loop_dir(app()->Director()->dir("resources"), $fileName);
+        $file = Router::loop_dir(app()->director->dir("resources"), $fileName);
         if ($file != null) {
             Router::$routes["public"][$uri] = $file->getPathname();
         }
@@ -53,15 +53,13 @@ class Router {
                 if ($uri == $r) {
                     $content_type = "text/" . explode(".", $uri)[1];
                     header("Content-Type: " . $content_type);
-                    include_once Router::$routes["public"][$uri];
-                    return true;
+                    return Router::$routes["public"][$uri];
                 }
             }
         } else {
             foreach (array_keys(Router::$routes["get"]) as $r) {
                 if ($uri == $r) {
-                    include_once Router::$routes["get"][$uri];
-                    return true;
+                    return Router::$routes["get"][$uri];
                 }
             }
         }

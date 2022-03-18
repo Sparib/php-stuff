@@ -5,7 +5,7 @@ namespace routes;
 use app\Internal\Router;
 use FilesystemIterator;
 
-loop_dir(app()->Director()->dir("resources"));
+loop_dir(app()->director->dir("resources"));
 
 function loop_dir($dir) {
     foreach (new FilesystemIterator($dir) as $f) {
