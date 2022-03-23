@@ -1,0 +1,1 @@
+The `src` directory is the directory which contains all of the actual framework, the root directory contains the docker stuff I use to run it locally while testing. This is very much not production, however you can find a working version running at [my dev site](https://dev.sparib.com).
