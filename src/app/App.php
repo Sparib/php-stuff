@@ -8,7 +8,6 @@ use app\Internal\Router;
 use app\Internal\Director;
 use FilesystemIterator;
 use Http\Discovery\Exception\NotFoundException;
-use InvalidArgumentException;
 
 class App {
 
