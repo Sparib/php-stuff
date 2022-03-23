@@ -14,7 +14,17 @@ class ErrorHandler {
      * @param \Throwable $e
      * @return never
      */
-    function global_handler(\Throwable $e): never {
+    public function global_handler(\Throwable $e): never {
+        \Sentry\addBreadcrumb(
+            new \Sentry\Breadcrumb(
+                \Sentry\Breadcrumb::LEVEL_ERROR,
+                \Sentry\Breadcrumb::TYPE_DEFAULT,
+                'handler',                                                  // category
+                'Error Handler',                                            // message (optional)
+                ['type' => get_class($e), 'message' => $e->getMessage()]    // data (optional)
+            )
+        );
+
         $exists = False;
         foreach (array_keys($this->handlers) as $type) {
             if (get_class($e) == $type)
@@ -34,14 +44,14 @@ class ErrorHandler {
         die();
     }
 
-    function global_error_handler($errno, $errstr, $errfile, $errline) {
+    public function global_error_handler($errno, $errstr, $errfile, $errline) {
         echo "Error > ", $errno, " : ", $errstr, " | In " . $errfile . " at " . $errline;
         return true;
     }
 
     /**
      * Adds an exception handler.
-     * Accepts a callable. First parameter must be exception type, other parameters are ignored.
+     * Accepts a callable. First parameter must be exception type, other parameters are ignored, meaning they must be optional.
      * Callable can return true to prevent default handling.
      *
      * @param callable $c
