@@ -21,10 +21,14 @@ class FileHandler {
             if (preg_match("/\w*\.disabled\.\w*/", $t->getFilename())) continue;
             if ($t->getType() === "file") {
                 if (!preg_match("/\w*.php$/", $t->getFilename())) continue;
-                array_push($return, $t);
+                $dirName = str_replace(__BASE_URL__, "", $dir);
+                $dirName = explode("/", $dirName);
+                $dirName = end($dirName);
+                if (!array_key_exists($dirName, $return)) $return[$dirName] = [];
+                array_push($return[$dirName], $t);
             } elseif ($t->getType() === "dir" && $recurse) {
                 if ($t->getFilename() === "vendor") continue;
-                array_push($return, ...$this->get_includes($t->getPathname()));
+                $return = array_merge($return, $this->get_includes($t->getPathname()));
             }
         }
         return $return;
