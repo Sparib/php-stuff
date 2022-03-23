@@ -2,8 +2,7 @@
 
 namespace app\Handlers;
 
-use Http\Discovery\Exception\NotFoundException;
-use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
+use InvalidArgumentException;
 
 class ErrorHandler {
     private $handlers = [];
@@ -16,42 +15,42 @@ class ErrorHandler {
      */
     public function global_handler(\Throwable $e): never {
         $exists = False;
-        foreach (array_keys($this->handlers) as $type) {
-            if (get_class($e) == $type)
-                if ($this->handlers[$type]($e))
-                    die();
-                else
-                    $exists = True;
-        }
 
-        if (!$exists) {
+        $throw_sentry = True;
+        if (array_key_exists(get_class($e), $this->handlers)) {
+            foreach ($this->handlers[get_class($e)] as $c) {
+                if ($c($e)) $throw_sentry = False;
+            }
+        } else {
             $code = 500;
             include_once __BASE_URL__ . "/pages/error.php";
         }
 
-        \Sentry\captureException($e);
+        if ($throw_sentry) \Sentry\captureException($e);
 
         die();
     }
 
     public function global_error_handler($errno, $errstr, $errfile, $errline) {
-        echo "Error > ", $errno, " : ", $errstr, " | In " . $errfile . " at " . $errline;
+        echo "Error > ", $errno, " : ", $errstr, " | In " . $errfile . " at " . $errline, "<br>";
         return true;
     }
 
     /**
      * Adds an exception handler.
      * Accepts a callable. First parameter must be exception type, other parameters are ignored, meaning they must be optional.
-     * Callable can return true to prevent default handling.
+     * Callable can return true to prevent throwing to sentry.
      *
      * @param callable $c
      * @return void
      */
     public function add_handler(callable $c) {
         $reflection = new \ReflectionFunction($c);
-        if ($reflection->getNumberOfParameters() < 1) throw new InvalidOptionsException("Exception handler must take at least one argument!");
-        if (!$reflection->getParameters()[0]->hasType()) throw new InvalidOptionsException("First parameter of exception handler must be typed!");
-        $this->handlers[$reflection->getParameters()[0]->getType()->getName()] = $c;
+        if ($reflection->getNumberOfParameters() < 1) throw new InvalidArgumentException("Exception handler must take at least one argument!");
+        if (!$reflection->getParameters()[0]->hasType()) throw new InvalidArgumentException("First parameter of exception handler must be typed!");
+        $type = $reflection->getParameters()[0]->getType()->getName();
+        if (!array_key_exists($type, $this->handlers)) $this->handlers[$type] = [];
+        array_push($this->handlers[$type], $c);
     }
 }
 
