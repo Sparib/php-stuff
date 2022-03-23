@@ -3,8 +3,11 @@
 namespace app\Handlers;
 
 use Http\Discovery\Exception\NotFoundException;
+use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 
 class ErrorHandler {
+    private $handlers = [];
+
     /**
      * Global exception handler, essentially the fallback
      *
@@ -12,10 +15,22 @@ class ErrorHandler {
      * @return never
      */
     function global_handler(\Throwable $e): never {
-        // echo "Exception > ", $e->getCode(), " : ", $e->getMessage(), " | In ", $e->getFile(), " at ", $e->getLine();
+        $exists = False;
+        foreach (array_keys($this->handlers) as $type) {
+            if (get_class($e) == $type)
+                if ($this->handlers[$type]($e))
+                    die();
+                else
+                    $exists = True;
+        }
+
+        if (!$exists) {
+            $code = 500;
+            include_once __BASE_URL__ . "/pages/error.php";
+        }
+
         \Sentry\captureException($e);
-        $code = 500;
-        include_once __BASE_URL__ . "/pages/error.php";
+
         die();
     }
 
@@ -23,10 +38,20 @@ class ErrorHandler {
         echo "Error > ", $errno, " : ", $errstr, " | In " . $errfile . " at " . $errline;
         return true;
     }
-    
-    public function handle_error($code) {
-        include(__BASE_URL__ . "/pages/error.php");
-        die();
+
+    /**
+     * Adds an exception handler.
+     * Accepts a callable. First parameter must be exception type, other parameters are ignored.
+     * Callable can return true to prevent default handling.
+     *
+     * @param callable $c
+     * @return void
+     */
+    public function add_handler(callable $c) {
+        $reflection = new \ReflectionFunction($c);
+        if ($reflection->getNumberOfParameters() < 1) throw new InvalidOptionsException("Exception handler must take at least one argument!");
+        if (!$reflection->getParameters()[0]->hasType()) throw new InvalidOptionsException("First parameter of exception handler must be typed!");
+        $this->handlers[$reflection->getParameters()[0]->getType()->getName()] = $c;
     }
 }
 

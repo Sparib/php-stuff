@@ -45,10 +45,10 @@ function error($code)
             flex-direction: column;
             width: 100vw;
             height: 100vh;
+            color: white;
         }
 
         p {
-            color: white;
             font-family: sans-serif;
             font-size: 16px;
         }
