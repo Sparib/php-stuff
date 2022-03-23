@@ -15,16 +15,6 @@ class ErrorHandler {
      * @return never
      */
     public function global_handler(\Throwable $e): never {
-        \Sentry\addBreadcrumb(
-            new \Sentry\Breadcrumb(
-                \Sentry\Breadcrumb::LEVEL_ERROR,
-                \Sentry\Breadcrumb::TYPE_DEFAULT,
-                'handler',                                                  // category
-                'Error Handler',                                            // message (optional)
-                ['type' => get_class($e), 'message' => $e->getMessage()]    // data (optional)
-            )
-        );
-
         $exists = False;
         foreach (array_keys($this->handlers) as $type) {
             if (get_class($e) == $type)
