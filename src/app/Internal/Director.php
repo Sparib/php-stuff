@@ -8,10 +8,10 @@ class Director {
     private $fileDir = [
         "app" => __BASE_URL__ . "/app",
         "internal" => __BASE_URL__ . "/app/Internal",
+        "handlers" => __BASE_URL__ . "/app/Handlers",
+        "routes" => __BASE_URL__ . "/app/routes",
         "pages" => __BASE_URL__ . "/pages",
-        "routes" => __BASE_URL__ . "/routes",
-        "resources" => __BASE_URL__ . "/resources",
-        "handlers" => __BASE_URL__ . "/app/Handlers"
+        "resources" => __BASE_URL__ . "/resources"
     ];
 
     public function dir($name) {
