@@ -3,6 +3,7 @@
 namespace app;
 
 use app\Handlers\ErrorHandler;
+use app\Handlers\FileHandler;
 use app\Internal\Router;
 use app\Internal\Director;
 use FilesystemIterator;
@@ -17,6 +18,9 @@ class App {
 
     public function run() {
         $this->setup_error_handler();
+
+        include_once __BASE_URL__ . "/app/Handlers/FileHandler.php";
+        new FileHandler();
 
         $this->create_director();
 
