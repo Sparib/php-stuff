@@ -36,6 +36,10 @@ class ErrorHandler {
         return true;
     }
 
+    public function nonbreaking($message, $level) {
+
+    }
+
     /**
      * Adds an exception handler.
      * Accepts a callable. First parameter must be exception type, other parameters are ignored, meaning they must be optional.
