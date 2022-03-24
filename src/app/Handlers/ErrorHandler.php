@@ -32,7 +32,7 @@ class ErrorHandler {
     }
 
     public function global_error_handler($errno, $errstr, $errfile, $errline) {
-        echo "Error > ", $errno, " : ", $errstr, " | In " . $errfile . " at " . $errline, "<br>";
+        \Sentry\captureMessage("Error > $errno : $errstr | In $errfile at $errline", \Sentry\Severity::warning());
         return true;
     }
 
