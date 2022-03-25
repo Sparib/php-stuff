@@ -18,8 +18,8 @@ class App {
     public function run() {
         $this->setup_error_handler();
 
-        include_once __BASE_URL__ . "/app/Handlers/FileHandler.php";
-        new FileHandler();
+        // include_once __BASE_URL__ . "/app/Handlers/FileHandler.php";
+        // new FileHandler();
 
         $this->create_director();
 
