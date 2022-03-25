@@ -9,7 +9,7 @@ use app\Internal\Director;
      * Will load with priorities and (optional) dependencies  
      * ```
      * [filename w/o extention] => [
-     *      'priority' => [num],
+     *      'priority' => [0 - 99999],
      *      'dependson' => [list of files]
      * ]
      * ```
@@ -26,6 +26,7 @@ class FileHandler {
 
     function initialize() {
         $includes = $this->get_includes(__BASE_URL__ . "/app");
+        $this->load_includes($includes);
 
         $director = new Director;
     }
@@ -50,18 +51,25 @@ class FileHandler {
     }
 
     private function load_includes(array $includes) {
-        $loaded = 0;
+        $loaded = [];
         $load = count($includes, COUNT_RECURSIVE) - count($includes);
 
-        while ($loaded < $load) {
+        while (count($loaded) < $load) {
             $cur_priority = null;
             $name = null;
 
             foreach ($includes as $dir) {
                 $directory = __BASE_URL__ . "/app/$dir";
-                foreach ($includes[$dir] as $file) {
-                    if ($file == false) continue;
-                    // TODO: Create nonbreaking error handling, handle nonrepresented file
+                foreach ($includes[$dir] as $filename) {
+                    if (!file_exists($directory . "/$filename.php"))
+                        ErrorHandler::nonbreaking("File entry for $filename, but it does not exist.", \Sentry\Severity::warning());
+                    $file = &$includes[$dir][$filename];
+                    if ($file === false) continue;
+                    if (!in_array("priority", $file)) array_push($file, ["priority" => 99999]);
+                    elseif (0 > $file["priority"] || $file["priority"] > 99999) {
+                        ErrorHandler::nonbreaking("File entry for $filename has a priority that is out of bounds. It will be clamped to the nearest value", \Sentry\Severity::warning());
+                        $file["priority"] = max(0, min($file["priority"], 99999));
+                    }
                 }
             }
         }
