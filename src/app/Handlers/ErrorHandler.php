@@ -36,8 +36,8 @@ class ErrorHandler {
         return true;
     }
 
-    public function nonbreaking($message, $level) {
-
+    public static function nonbreaking($message, \Sentry\Severity $severity) {
+        \Sentry\captureMessage($message, $severity);
     }
 
     /**
