@@ -23,10 +23,15 @@ use app\Internal\Director;
 class FileHandler {
 
     public readonly Director $director;
+    private $includes = [];
+    private $file_list = [];
 
     function initialize() {
-        $includes = $this->get_includes(__BASE_URL__ . "/app");
-        $this->load_includes($includes);
+        $this->includes = $this->get_includes(__BASE_URL__ . "/app");
+
+        $this->file_list = $this->flatten_includes();
+
+        $this->load_includes();
 
         $director = new Director;
     }
@@ -50,29 +55,54 @@ class FileHandler {
         return $return;
     }
 
-    private function load_includes(array $includes) {
+    private function flatten_includes(): array {
+        $return = [];
+
+        foreach ($this->includes as $dir) foreach ($this->includes[$dir] as $file) array_push($return, $file);
+
+        return $return;
+    }
+
+    private function load_includes(): array {
         $loaded = [];
-        $load = count($includes, COUNT_RECURSIVE) - count($includes);
+        $load = count($this->includes, COUNT_RECURSIVE) - count($this->includes);
 
         while (count($loaded) < $load) {
             $cur_priority = null;
-            $name = null;
+            $cur_file = null;
 
-            foreach ($includes as $dir) {
+            foreach ($this->includes as $dir) {
                 $directory = __BASE_URL__ . "/app/$dir";
-                foreach ($includes[$dir] as $filename) {
+                foreach ($this->includes[$dir] as $filename) {
                     if (!file_exists($directory . "/$filename.php"))
                         ErrorHandler::nonbreaking("File entry for $filename, but it does not exist.", \Sentry\Severity::warning());
-                    $file = &$includes[$dir][$filename];
+                    
+                    $file = &$this->includes[$dir][$filename];
+
                     if ($file === false) continue;
                     if (!in_array("priority", $file)) array_push($file, ["priority" => 99999]);
                     elseif (0 > $file["priority"] || $file["priority"] > 99999) {
                         ErrorHandler::nonbreaking("File entry for $filename has a priority that is out of bounds. It will be clamped to the nearest value", \Sentry\Severity::warning());
                         $file["priority"] = max(0, min($file["priority"], 99999));
                     }
+
+                    if (array_key_exists("dependson", $file)) {
+                        $include_dpend = [];
+                        foreach ($file["dependson"] as $depend) {
+                            if (!array_key_exists($depend, $this->includes));
+                            # Finish this idek
+                        }
+                    }
+
+                    if ($cur_priority > $file["priority"]) {
+                        $cur_priority = $file["priority"];
+                        $cur_file = $file;
+                    }
                 }
             }
         }
+        
+        return $loaded;
     }
 }
 
