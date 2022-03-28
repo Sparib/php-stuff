@@ -3,6 +3,8 @@
 namespace app\Handlers;
 
 use app\Internal\Director;
+use Error;
+
     /**
      * Example:
      * 
@@ -74,23 +76,32 @@ class FileHandler {
             foreach ($this->includes as $dir) {
                 $directory = __BASE_URL__ . "/app/$dir";
                 foreach ($this->includes[$dir] as $filename) {
-                    if (!file_exists($directory . "/$filename.php"))
-                        ErrorHandler::nonbreaking("File entry for $filename, but it does not exist.", \Sentry\Severity::warning());
+                    if (!file_exists("{$directory}/{$filename}.php"))
+                        ErrorHandler::nonbreaking("File entry for {$filename}, but it does not exist.", \Sentry\Severity::warning());
                     
                     $file = &$this->includes[$dir][$filename];
 
                     if ($file === false) continue;
                     if (!in_array("priority", $file)) array_push($file, ["priority" => 99999]);
                     elseif (0 > $file["priority"] || $file["priority"] > 99999) {
-                        ErrorHandler::nonbreaking("File entry for $filename has a priority that is out of bounds. It will be clamped to the nearest value", \Sentry\Severity::warning());
+                        ErrorHandler::nonbreaking("File entry for {$filename} has a priority that is out of bounds. It will be clamped to the nearest value.", \Sentry\Severity::warning());
                         $file["priority"] = max(0, min($file["priority"], 99999));
                     }
 
                     if (array_key_exists("dependson", $file)) {
                         $include_dpend = [];
                         foreach ($file["dependson"] as $depend) {
-                            if (!array_key_exists($depend, $this->includes));
-                            # Finish this idek
+                            if (!array_key_exists($depend, $this->includes))
+                                throw new Error("File entry for {$filename} contains a non-existent dependency \"{$depend}\".");
+
+                            $depend_path = $this->get_path($depend);
+                            if ($depend_path == null)
+                                throw new Error("Error retrieving the path for {$depend}.");
+
+                            if ($this->include($depend_path))
+                                $this->check_file($depend);
+                            else
+                                throw new Error("File path for dependency \"{$depend}\" under file entry \"{$filename}\" does not exist.");
                         }
                     }
 
@@ -103,6 +114,41 @@ class FileHandler {
         }
         
         return $loaded;
+    }
+
+    private function include(string $filePath): bool {
+        if (!file_exists($filePath))
+            return false;
+        else {
+            include_once $filePath;
+            return true;
+        }
+    }
+
+    private function check_file(string $filename): void {
+        foreach ($this->includes as $dir) {
+            foreach ($this->includes[$dir] as $file) {
+                if ($filename === $file) {
+                    if (in_array("checked", $this->includes[$dir][$filename]))
+                        array_push($this->includes[$dir][$filename], "checked");
+                    break;
+                }
+            }
+        }
+    }
+
+    private function get_path($file) {
+        $return = null;
+        foreach ($this->includes as $dir) {
+            foreach ($this->includes[$dir] as $filename) {
+                if ($file === $filename) {
+                    $return = __BASE_URL__ . "/app/{$dir}/{$filename}.php";
+                    break;
+                }
+            }
+        }
+
+        return $return;
     }
 }
 
