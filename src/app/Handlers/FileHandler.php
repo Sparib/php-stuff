@@ -70,29 +70,36 @@ class FileHandler {
         $load = count($this->includes, COUNT_RECURSIVE) - count($this->includes);
 
         while (count($loaded) < $load) {
-            $cur_priority = null;
-            $cur_file = null;
+            [$file, $priority] = array_merge($loaded, $this->loop_dir($this->includes, null));
+        }
+        
+        return $loaded;
+    }
 
-            foreach ($this->includes as $dir) {
-                $directory = __BASE_URL__ . "/app/$dir";
-                foreach ($this->includes[$dir] as $filename) {
-                    if (!file_exists("{$directory}/{$filename}.php"))
-                        ErrorHandler::nonbreaking("File entry for {$filename}, but it does not exist.", \Sentry\Severity::warning());
+    private function loop_dir(array &$table, int|null $priority, string $directory = __BASE_URL__ . "/app"): array {
+        $file = null;
+        $cur_priority = $priority;
+        
+        foreach ($table as $item) {
+            if ($item instanceof File) {
+                    if (!file_exists("{$directory}/{$item}.php"))
+                        ErrorHandler::nonbreaking("File entry for {$item}, but it does not exist.", \Sentry\Severity::warning());
                     
-                    $file = &$this->includes[$dir][$filename];
+                    $file = &$table[$item];
 
                     if ($file === false) continue;
                     if (!in_array("priority", $file)) array_push($file, ["priority" => 99999]);
                     elseif (0 > $file["priority"] || $file["priority"] > 99999) {
-                        ErrorHandler::nonbreaking("File entry for {$filename} has a priority that is out of bounds. It will be clamped to the nearest value.", \Sentry\Severity::warning());
+                        ErrorHandler::nonbreaking("File entry for {$item} has a priority that is out of bounds. It will be clamped to the nearest value.", \Sentry\Severity::warning());
                         $file["priority"] = max(0, min($file["priority"], 99999));
                     }
 
                     if (array_key_exists("dependson", $file)) {
+                        // TODO: Replace with handle_dependencies
                         $include_dpend = [];
                         foreach ($file["dependson"] as $depend) {
                             if (!array_key_exists($depend, $this->includes))
-                                throw new Error("File entry for {$filename} contains a non-existent dependency \"{$depend}\".");
+                                throw new Error("File entry for {$item} contains a non-existent dependency \"{$depend}\".");
 
                             $depend_path = $this->get_path($depend);
                             if ($depend_path == null)
@@ -101,7 +108,7 @@ class FileHandler {
                             if ($this->include($depend_path))
                                 $this->check_file($depend);
                             else
-                                throw new Error("File path for dependency \"{$depend}\" under file entry \"{$filename}\" does not exist.");
+                                throw new Error("File path for dependency \"{$depend}\" under file entry \"{$item}\" does not exist.");
                         }
                     }
 
@@ -109,11 +116,10 @@ class FileHandler {
                         $cur_priority = $file["priority"];
                         $cur_file = $file;
                     }
-                }
             }
         }
-        
-        return $loaded;
+
+        return [$file, $cur_priority];
     }
 
     private function include(string $filePath): bool {
@@ -137,6 +143,10 @@ class FileHandler {
         }
     }
 
+    private function handle_dependencies(array $depends) {
+        // TODO: Handle list of files and load by priority
+    }
+
     private function get_path($file) {
         $return = null;
         foreach ($this->includes as $dir) {
@@ -151,5 +161,49 @@ class FileHandler {
         return $return;
     }
 }
+
+class File {
+    public readonly int $priority;
+    public readonly array $dependencies;
+
+    public function __construct(int $priority, array $dependencies = []) {
+        $this->priority = $priority;
+        $this->dependencies = $dependencies;
+    }
+}
+
+                    // if (!file_exists("{$directory}/{$filename}.php"))
+                    //     ErrorHandler::nonbreaking("File entry for {$filename}, but it does not exist.", \Sentry\Severity::warning());
+                    
+                    // $file = &$this->includes[$dir][$filename];
+
+                    // if ($file === false) continue;
+                    // if (!in_array("priority", $file)) array_push($file, ["priority" => 99999]);
+                    // elseif (0 > $file["priority"] || $file["priority"] > 99999) {
+                    //     ErrorHandler::nonbreaking("File entry for {$filename} has a priority that is out of bounds. It will be clamped to the nearest value.", \Sentry\Severity::warning());
+                    //     $file["priority"] = max(0, min($file["priority"], 99999));
+                    // }
+
+                    // if (array_key_exists("dependson", $file)) {
+                    //     $include_dpend = [];
+                    //     foreach ($file["dependson"] as $depend) {
+                    //         if (!array_key_exists($depend, $this->includes))
+                    //             throw new Error("File entry for {$filename} contains a non-existent dependency \"{$depend}\".");
+
+                    //         $depend_path = $this->get_path($depend);
+                    //         if ($depend_path == null)
+                    //             throw new Error("Error retrieving the path for {$depend}.");
+
+                    //         if ($this->include($depend_path))
+                    //             $this->check_file($depend);
+                    //         else
+                    //             throw new Error("File path for dependency \"{$depend}\" under file entry \"{$filename}\" does not exist.");
+                    //     }
+                    // }
+
+                    // if ($cur_priority > $file["priority"]) {
+                    //     $cur_priority = $file["priority"];
+                    //     $cur_file = $file;
+                    // }
 
 ?>
