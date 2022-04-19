@@ -5,21 +5,9 @@ namespace app\Handlers;
 use app\Internal\Director;
 use Error;
 
-    /**
-     * Example:
-     * 
-     * Will load with priorities and (optional) dependencies  
-     * ```
-     * "filename w/o extention" => new File(priority {0-99999}[, optional dependencies])
-     * ```
-     * 
-     * OR
-     * 
-     * Will not be loaded
-     * `[filename w/o extention] => false`
-     */
+    
 
-     // TODO: Cry
+    // TODO: Cry
 
 class FileHandler {
 
@@ -34,6 +22,19 @@ class FileHandler {
                 "Router" => new File(0, ["Director"])
             ]
         ];
+        /**
+         * Example:
+         * 
+         * Will load with priorities and (optional) dependencies  
+         * ```
+         * "filename w/o extention" => new File(priority {0-99999}[, optional dependencies])
+         * ```
+         * 
+         * OR
+         * 
+         * Will not be loaded
+         * `[filename w/o extention] => false`
+         */
     }
 
     public function initialize() {
@@ -110,7 +111,8 @@ class FileHandler {
 
                 if ($item === false) continue;
 
-                if (array_key_exists("dependson", $item)) { // FIXME: Create functions for file class instead of array_key_exists
+                if (array_key_exists("dependson", $item)) {
+                    // FIXME: Create functions for file class instead of array_key_exists
                     // TODO: Replace with handle_dependencies
                     $include_dpend = [];
                     foreach ($item["dependson"] as $depend) {
@@ -188,6 +190,8 @@ class File {
     public readonly int $priority;
     public readonly array $dependencies;
     public bool $checked = false;
+
+    // TODO: Getters and checker
 
     public function __construct(int $priority, array $dependencies = []) {
         if (0 > $priority || $priority > 99999) {
