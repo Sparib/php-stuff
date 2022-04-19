@@ -20,6 +20,7 @@ class App {
 
         include_once __BASE_URL__ . "/app/Handlers/FileHandler.php";
         (new FileHandler())->initialize();
+        // FIXME: ^^^^^^
 
         $this->create_director();
 
