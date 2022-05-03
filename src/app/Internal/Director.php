@@ -5,6 +5,16 @@ namespace app\Internal;
 use InvalidArgumentException;
 
 class Director {
+    public readonly array $loads;
+
+    function __construct() {
+        $loads = [
+            "Handler/ErrorHandler",
+            "Internal/Director",
+            "Internal/Router"
+        ];
+    }
+
     private $fileDir = [
         "app" => __BASE_URL__ . "/app",
         "internal" => __BASE_URL__ . "/app/Internal",
