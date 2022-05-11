@@ -13,6 +13,10 @@ class FileHandler {
         include_once __BASE_URL__ . "/app/Internal/Director.php";
         $this->director = new Director();
     }
+
+    public function include_files() {
+        # code...
+    }
 }
 
 ?>
