@@ -4,10 +4,14 @@
 // TODO: Also, preferably handle non existent files and entries with non-breaking errors.
 
 namespace app\Handlers;
+use app\Internal\Director;
 
 class FileHandler {
-    function __construct() {
-        
+    public readonly array $director;
+
+    public function create_director() {
+        include_once __BASE_URL__ . "/app/Internal/Director.php";
+        $this->director = new Director();
     }
 }
 

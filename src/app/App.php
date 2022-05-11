@@ -13,16 +13,13 @@ class App {
 
     public readonly Director $director;
 
+    private readonly FileHandler $file_handler;
     private readonly ErrorHandler $error_handler;
 
     public function run() {
         $this->setup_error_handler();
 
-        include_once __BASE_URL__ . "/app/Handlers/FileHandler.php";
-
-        $this->create_director();
-
-        $this->include_files();
+        $this->setup_file_handler();
 
         $this->get_page();
     }
@@ -40,23 +37,25 @@ class App {
         });
     }
 
-    private function create_director() {
-        include_once __BASE_URL__ . '/app/Internal/Director.php';
-        $this->director = new Director();
+    private function setup_file_handler() {
+        include_once __BASE_URL__ . "/app/Handlers/FileHandler.php";
+        $this->file_handler = new FileHandler();
+        $this->file_handler->create_director();
+        $this->file_handler->include_files();
     }
 
-    private function include_files() {
-        $this->loop_dir($this->director->dir("internal"));
-        $this->loop_dir($this->director->dir("handlers"));
+    // private function include_files() {
+    //     $this->loop_dir($this->director->dir("internal"));
+    //     $this->loop_dir($this->director->dir("handlers"));
 
-        include_once $this->director->dir("routes") . "/resources.php";
+    //     include_once $this->director->dir("routes") . "/resources.php";
         
-        if (file_exists($this->director->dir("routes") . "/lazy_routes.php")) {
-            include_once $this->director->dir("routes") . "/lazy_routes.php";
-            return;
-        } else
-            $this->loop_dir($this->director->dir("routes"));
-    }
+    //     if (file_exists($this->director->dir("routes") . "/lazy_routes.php")) {
+    //         include_once $this->director->dir("routes") . "/lazy_routes.php";
+    //         return;
+    //     } else
+    //         $this->loop_dir($this->director->dir("routes"));
+    // }
 
     private function get_page() {
         \Sentry\addBreadcrumb(
