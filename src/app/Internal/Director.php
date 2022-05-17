@@ -8,8 +8,8 @@ class Director {
     public readonly array $loads;
 
     function __construct() {
-        $loads = [
-            "Handler/ErrorHandler",
+        $this->loads = [
+            "Handlers/ErrorHandler",
             "Internal/Director",
             "Internal/Router"
         ];
