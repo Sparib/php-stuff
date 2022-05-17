@@ -5,6 +5,11 @@ namespace app\Internal;
 use InvalidArgumentException;
 
 class Director {
+    /**
+     * List of files to load in order of priority.
+     *
+     * @var array
+     */
     public readonly array $loads;
 
     function __construct() {
