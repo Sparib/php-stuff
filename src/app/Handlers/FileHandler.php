@@ -5,6 +5,7 @@
 
 namespace app\Handlers;
 use app\Internal\Director;
+use FilesystemIterator;
 
 class FileHandler {
     public readonly Director $director;
@@ -12,6 +13,7 @@ class FileHandler {
     public function create_director() {
         include_once __BASE_URL__ . "/app/Internal/Director.php";
         $this->director = new Director();
+        return $this->director;
     }
 
     public function include_files() {
@@ -32,10 +34,29 @@ class FileHandler {
                     )
                 );
                 $has_error = true;
-            }
+            } else
+                include_once $path;
         }
 
         if ($has_error) ErrorHandler::nonbreaking("One or more nonbreaking errors encountered during file loading.", \Sentry\Severity::warning());
+
+        if (is_file($this->director->dir('routes') . "/lazy_routes.php")) {
+            include_once $this->director->dir('routes') . "/lazy_routes.php";
+            return;
+        }
+
+        $recursive_load = function ($dir) {
+            foreach (new FilesystemIterator($dir) as $t) {
+                if (preg_match("/\w*\.disabled\.\w*/", $t->getFilename())) continue;
+                if ($t->getType() === "file") {
+                    include_once $t->getPathname();
+                } elseif ($t->getType() === "dir") {
+                    $recursive_load($t->getPathname());
+                }
+            }
+        };
+
+        $recursive_load($this->director->dir('routes'));
     }
 }
 

@@ -40,7 +40,7 @@ class App {
     private function setup_file_handler() {
         include_once __BASE_URL__ . "/app/Handlers/FileHandler.php";
         $this->file_handler = new FileHandler();
-        $this->file_handler->create_director();
+        $this->director = $this->file_handler->create_director();
         $this->file_handler->include_files();
     }
 
