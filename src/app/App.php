@@ -44,19 +44,6 @@ class App {
         $this->file_handler->include_files();
     }
 
-    // private function include_files() {
-    //     $this->loop_dir($this->director->dir("internal"));
-    //     $this->loop_dir($this->director->dir("handlers"));
-
-    //     include_once $this->director->dir("routes") . "/resources.php";
-        
-    //     if (file_exists($this->director->dir("routes") . "/lazy_routes.php")) {
-    //         include_once $this->director->dir("routes") . "/lazy_routes.php";
-    //         return;
-    //     } else
-    //         $this->loop_dir($this->director->dir("routes"));
-    // }
-
     private function get_page() {
         \Sentry\addBreadcrumb(
             new \Sentry\Breadcrumb(
