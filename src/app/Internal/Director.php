@@ -16,7 +16,8 @@ class Director {
         $this->loads = [
             "Handlers/ErrorHandler",
             "Internal/Director",
-            "Internal/Router"
+            "Internal/Router",
+            "Internal/Response"
         ];
     }
 
