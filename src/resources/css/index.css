@@ -1,0 +1,11 @@
+:root {
+    --bg: #222;
+    --fg: #dcd;
+}
+
+html,
+body {
+    color: var(--fg);
+    background: var(--bg);
+    font-family: sans-serif;
+}
