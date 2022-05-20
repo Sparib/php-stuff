@@ -1,5 +1,7 @@
 <?php
 
+namespace app\Internal;
+
 class Response {
     public static function return_json($array, $code = 200): never {
         header("Content-Type: application/json");
