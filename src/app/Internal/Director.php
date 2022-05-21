@@ -17,7 +17,8 @@ class Director {
             "Handlers/ErrorHandler",
             "Internal/Director",
             "Internal/Router",
-            "Internal/Response"
+            "Internal/Response",
+            "Handlers/TodoHandler"
         ];
     }
 
