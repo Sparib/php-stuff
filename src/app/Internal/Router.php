@@ -33,8 +33,6 @@ class Router {
             ErrorHandler::nonbreaking("Function '$stringed' for uri '$apiUri' is not callable", \Sentry\Severity::warning());
             return;
         }
-
-
     }
 
     private static function loop_dir($dir, $fileName) {
