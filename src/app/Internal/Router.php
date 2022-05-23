@@ -7,7 +7,7 @@ use FilesystemIterator;
 
 class Router {
     private static $routes = ["get" => [], "resources" => [], "api" => []];
-    private static $routeExts = ["resources" => "/public", "api" => "//"];
+    private static $routeExts = ["resources" => "/public", "api" => "/api//"];
 
     public static function get($uri, $fileName) {
         $name = (str_ends_with($fileName, ".php") ? $fileName : $fileName . ".php");
@@ -20,6 +20,8 @@ class Router {
 
     public static function api($apiUri, $function) {
         # Check if function is actually callable
+        $uri = trim($apiUri, "/");
+
         if (!is_callable($function)) {
             $stringed = $function;
 
@@ -30,9 +32,11 @@ class Router {
                 else
                     $stringed = get_class($function[0]) . "->$function[1]";
 
-            ErrorHandler::nonbreaking("Function '$stringed' for uri '$apiUri' is not callable", \Sentry\Severity::warning());
+            ErrorHandler::nonbreaking("Function '$stringed' for uri '$uri' is not callable", \Sentry\Severity::warning());
             return;
         }
+
+        Router::$routes["api"][$uri] = $function;
     }
 
     private static function loop_dir($dir, $fileName) {
@@ -81,6 +85,8 @@ class Router {
 
             if ($ext == "resources" && $pageInfo[1] != null) {
                 header("Content-Type: $pageInfo[1]");
+            } elseif ($ext == "api") {
+                Router::$routes[$ext][$path](); # Runs the callable attached to an api uri
             }
 
             return $pageInfo[0];
