@@ -85,11 +85,11 @@ class Router {
 
             if ($ext == "resources" && $pageInfo[1] != null) {
                 header("Content-Type: $pageInfo[1]");
-            } elseif ($ext == "api") {
-                Router::$routes[$ext][$path](); # Runs the callable attached to an api uri
             }
-
-            return $pageInfo[0];
+            
+            if ($ext == "api") {
+                Router::$routes[$ext][$path](); # Runs the callable attached to an api uri
+            } else return $pageInfo[0];
         }
 
         return false;
