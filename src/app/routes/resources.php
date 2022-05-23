@@ -16,7 +16,10 @@ function loop_dir($dir) {
             $type = explode("/", str_replace(app()->director->dir("resources") . "/", "", $dir))[0];
             $content_type = array_key_exists($type, $types) ? $types[$type] : null;
             
-            if ($type == "images") $content_type = str_replace("?", end(explode(".", $f->getFilename())), $types[$type]);
+            if ($type == "images") {
+                $tmp = explode(".", $f->getFilename());
+                $content_type = str_replace("?", end($tmp), $types[$type]);
+            }
             
             Router::resource(str_replace(__BASE_URL__ . "/resources", "", $f->getPathname()), $f->getPathname(), $content_type);
         } elseif ($f->getType() === "dir") {
