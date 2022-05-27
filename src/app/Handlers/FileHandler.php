@@ -4,6 +4,8 @@
 // TODO: Also, preferably handle non existent files and entries with non-breaking errors.
 
 namespace app\Handlers;
+
+use app\App;
 use app\Internal\Director;
 use FilesystemIterator;
 
@@ -19,6 +21,7 @@ class FileHandler {
     public function include_files() {
         $has_error = false;
         foreach ($this->director->loads as $path) {
+            $span = App::getNewTransactionSpan("file_handler.file", $path);
             $origin = $path;
             if (!str_starts_with($path, "/")) $path = "/${path}";
             if (!str_starts_with($path, "/app")) $path = "/app${path}";
@@ -36,6 +39,7 @@ class FileHandler {
                 $has_error = true;
             } else
                 include_once $path;
+            App::completeTransation($span);
         }
 
         if ($has_error) ErrorHandler::nonbreaking("One or more nonbreaking errors encountered during file loading.", \Sentry\Severity::warning());
