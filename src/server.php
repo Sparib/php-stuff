@@ -25,10 +25,19 @@ if (!function_exists('app')) {
     }
 }
 
+$routeExts = ["resource.request" => "/public", "api.request" => "/api//"];
+$op = "http.request";
+foreach ($routeExts as $e => $pre) {
+    if (str_starts_with($uri, $pre)) {
+        $ext = $e;
+        break;
+    }
+}
+
 // Setup full transaction context
 $transactionContext = new \Sentry\Tracing\TransactionContext();
-$transactionContext->setName('Page Request');
-$transactionContext->setOp('http.request');
+$transactionContext->setName('Request');
+$transactionContext->setOp($op);
 
 $transaction = \Sentry\startTransaction($transactionContext);
 
