@@ -87,16 +87,6 @@ class App {
     }
 
     private function get_page() {
-        \Sentry\addBreadcrumb(
-            new \Sentry\Breadcrumb(
-                \Sentry\Breadcrumb::LEVEL_INFO,
-                \Sentry\Breadcrumb::TYPE_DEFAULT,
-                'req',                                  // category
-                'Page Request',                         // message (optional)
-                ['page' => $_SERVER["REQUEST_URI"]]     // data (optional)
-            )
-        );
-
         if (file_exists($this->director->dir("pages") . "/maintenance.php")) {
             include_once $this->director->dir("pages") . "/maintenance.php";
             return;
