@@ -4,13 +4,17 @@ namespace app\Handlers;
 use app\Internal\Response;
 
 class TodoHandler {
+    private static ?array $cached_todos = null;
     public static function get_todo() {
-        $todos = [
-            new Todo("Icons look nice", true),
-            new Todo("Workers?"),
-            new Todo("Look at morgs dms for what he's suggested"),
-            new Todo("Api stuff???")
-        ];
+        if (!self::$cached_todos) { 
+            self::$cached_todos = [
+                new Todo("Icons look nice", true),
+                new Todo("Workers?"),
+                new Todo("Look at morgs dms for what he's suggested"),
+                new Todo("Api stuff???")
+            ];
+        }
+        $todos = self::$cached_todos;
         $return = [];
         foreach ($todos as $todo) {
             $return[$todo->task] = $todo->complete;
