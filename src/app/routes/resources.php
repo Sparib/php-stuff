@@ -9,7 +9,7 @@ use FilesystemIterator;
 loop_dir(app()->director->dir("resources"));
 
 function loop_dir($dir) {
-    $types = ["css" => "text/css", "js" => "text/js", "images" => "image/?"];
+    $types = ["css" => "text/css", "js" => "text/javascript", "images" => "image/?"];
 
     foreach (new FilesystemIterator($dir) as $f) {
         if ($f->getType() === "file") {
