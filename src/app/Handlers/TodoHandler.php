@@ -6,7 +6,10 @@ use app\Internal\Response;
 class TodoHandler {
     public static function get_todo() {
         $todos = [
-            new Todo("Fix everything")
+            new Todo("Icons look nice", true),
+            new Todo("Workers?"),
+            new Todo("Look at morgs dms for what he's suggested"),
+            new Todo("Api stuff???")
         ];
         $return = [];
         foreach ($todos as $todo) {
