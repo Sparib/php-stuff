@@ -28,8 +28,8 @@ if (!function_exists('app')) {
 $routeExts = ["resource.request" => "/public", "api.request" => "/api//"];
 $op = "http.request";
 foreach ($routeExts as $e => $pre) {
-    if (str_starts_with($uri, $pre)) {
-        $ext = $e;
+    if (str_starts_with($_SERVER["REQUEST_URI"], $pre)) {
+        $op = $e;
         break;
     }
 }
