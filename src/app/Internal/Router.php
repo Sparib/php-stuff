@@ -89,9 +89,10 @@ class Router {
             
             if ($ext == "api") {
                 Router::$routes[$ext][$path](); # Runs the callable attached to an api uri
-            } else return $pageInfo[0];
+                return [true, null];
+            } else return [true, $pageInfo[0]];
         }
 
-        return false;
+        return [false, null];
     }
 }

@@ -93,12 +93,12 @@ class App {
         }
 
         $span = App::getNewTransactionSpan("router.fetch");
-        $uri = Router::fetch($_SERVER["REQUEST_URI"]);
+        [$success, $uri] = Router::fetch($_SERVER["REQUEST_URI"]);
         App::completeTransation($span);
 
-        if (!$uri)
+        if (!$success)
             throw new NotFoundException();
-        else
+        elseif ($uri != null)
             include_once $uri;
     }
 
