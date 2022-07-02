@@ -3,6 +3,8 @@
 namespace app\Internal;
 
 use app\Handlers\ErrorHandler;
+use app\Handlers\InvalidMethodException;
+use BadMethodCallException;
 use FilesystemIterator;
 
 class Router {
@@ -18,7 +20,7 @@ class Router {
         Router::$routes["resources"][$uri] = array($filePath, $content_type);
     }
 
-    public static function api($apiUri, $function) {
+    public static function api($apiUri, $function, $method = "GET") {
         # Check if function is actually callable
         $uri = trim($apiUri, "/");
 
@@ -36,7 +38,7 @@ class Router {
             return;
         }
 
-        Router::$routes["api"][$uri] = $function;
+        Router::$routes["api"][$uri] = [$function, $method];
     }
 
     private static function loop_dir($dir, $fileName) {
@@ -76,7 +78,7 @@ class Router {
         }
 
         /*
-         *  pageInfo[0] is the path to the file
+         *  pageInfo[0] is the path to the file (or api callable)
          *  this is for extensions that have associated values with paths
          *  such as the resources extension requiring a Content-Type individual to each path
          */ 
@@ -88,7 +90,8 @@ class Router {
             }
             
             if ($ext == "api") {
-                Router::$routes[$ext][$path](); # Runs the callable attached to an api uri
+                if ($_SERVER['REQUEST_METHOD'] != $pageInfo[1]) throw new InvalidMethodException();
+                $pageInfo[0](); # Runs the callable attached to an api uri
                 return [true, null];
             } else return [true, $pageInfo[0]];
         }

@@ -2,6 +2,7 @@
 
 namespace app\Handlers;
 
+use Http\Discovery\Exception;
 use InvalidArgumentException;
 
 class ErrorHandler {
@@ -57,5 +58,10 @@ class ErrorHandler {
         array_push($this->handlers[$type], $c);
     }
 }
+
+/**
+ * Thrown when a call to a uri is not of an acceptable method
+ */
+class InvalidMethodException extends \RuntimeException implements Exception {}
 
 ?>
