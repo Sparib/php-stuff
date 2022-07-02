@@ -4,6 +4,7 @@ namespace app;
 
 use app\Handlers\ErrorHandler;
 use app\Handlers\FileHandler;
+use app\Handlers\InvalidMethodException;
 use app\Internal\Router;
 use app\Internal\Director;
 use FilesystemIterator;
@@ -62,6 +63,12 @@ class App {
 
         $this->error_handler->add_handler(function(NotFoundException $e) {
             $code = 404;
+            include_once __BASE_URL__ . "/pages/error.php";
+            return true;
+        });
+
+        $this->error_handler->add_handler(function(InvalidMethodException $e) {
+            $code = 405;
             include_once __BASE_URL__ . "/pages/error.php";
             return true;
         });
