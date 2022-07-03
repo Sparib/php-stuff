@@ -36,7 +36,7 @@ foreach ($routeExts as $e => $pre) {
 
 // Setup full transaction context
 $transactionContext = new \Sentry\Tracing\TransactionContext();
-$transactionContext->setName('Request');
+$transactionContext->setName('Request from local dev');
 $transactionContext->setOp($op);
 
 $transaction = \Sentry\startTransaction($transactionContext);
