@@ -9,9 +9,8 @@ class TodoHandler {
         if (!self::$cached_todos) { 
             self::$cached_todos = [
                 new Todo("Icons look nice", true),
-                new Todo("Workers?"),
-                new Todo("Look at morgs dms for what he's suggested"),
-                new Todo("Api stuff???")
+                new Todo("Make api run off api subdomain instead of //"),
+                new Todo("Rewrite flask as php")
             ];
         }
         $todos = self::$cached_todos;
