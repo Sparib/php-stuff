@@ -25,25 +25,4 @@ if (!function_exists('app')) {
     }
 }
 
-$routeExts = ["resource.request" => "/public", "api.request" => "/api//"];
-$op = "http.request";
-foreach ($routeExts as $e => $pre) {
-    if (str_starts_with($_SERVER["REQUEST_URI"], $pre)) {
-        $op = $e;
-        break;
-    }
-}
-
-// Setup full transaction context
-$transactionContext = new \Sentry\Tracing\TransactionContext();
-$transactionContext->setName('Request from local dev');
-$transactionContext->setOp($op);
-
-$transaction = \Sentry\startTransaction($transactionContext);
-
-\Sentry\SentrySdk::getCurrentHub()->setSpan($transaction);
-
 app()->run();
-
-\Sentry\SentrySdk::getCurrentHub()->setSpan($transaction);
-$transaction->finish();

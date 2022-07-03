@@ -14,16 +14,41 @@ class App {
 
     public readonly Director $director;
 
+    public readonly string $subdomain;
+
     private readonly FileHandler $file_handler;
     private readonly ErrorHandler $error_handler;
     private static $parentSpan = null;
 
     public function run() {
+        $uriParts = explode(".", $_SERVER["HTTP_HOST"]);
+        $subdomain = count($uriParts) <= 2 ? "base" : join(".", array_slice($uriParts, 0, count($uriParts) - 2));
+
+        $op = "http.request";
+
+        if (str_ends_with($subdomain, "api")) {
+            $op = "api.request";
+        } else if (str_starts_with($_SERVER["REQUEST_URI"], "/resource")) {
+            $op = "resource.request";
+        }
+
+        // Setup full transaction context
+        $transactionContext = new \Sentry\Tracing\TransactionContext();
+        $transactionContext->setName('Request from local dev');
+        $transactionContext->setOp($op);
+        
+        $transaction = \Sentry\startTransaction($transactionContext);
+        
+        \Sentry\SentrySdk::getCurrentHub()->setSpan($transaction);
+        
         $this->setup_error_handler();
 
         $this->setup_file_handler();
 
         $this->get_page();
+
+        \Sentry\SentrySdk::getCurrentHub()->setSpan($transaction);
+        $transaction->finish();
     }
 
     public static function getNewTransactionSpan($op, $desc = null) {
@@ -100,7 +125,7 @@ class App {
         }
 
         $span = App::getNewTransactionSpan("router.fetch");
-        [$success, $uri] = Router::fetch($_SERVER["REQUEST_URI"]);
+        [$success, $uri] = Router::fetch($_SERVER["REQUEST_URI"], $subdomain);
         App::completeTransation($span);
 
         if (!$success)

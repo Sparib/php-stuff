@@ -9,7 +9,11 @@ use FilesystemIterator;
 
 class Router {
     private static $routes = ["get" => [], "resources" => [], "api" => []];
-    private static $routeExts = ["resources" => "/public", "api" => "/api//"];
+    private static $subdomainRoutes = [
+        "base" => [
+            "resources" => "/public"
+        ]
+    ];
 
     public static function get($uri, $fileName) {
         $name = (str_ends_with($fileName, ".php") ? $fileName : $fileName . ".php");
@@ -64,12 +68,16 @@ class Router {
      * 
      * @return bool
      */
-    public static function fetch($uri) {
+    public static function fetch($uri, $subdomain) {
+        if (!array_key_exists($subdomain, Router::$subdomainRoutes)) {
+            return;
+        }
+
         $uri = explode("?", $uri)[0];
 
         $ext = "get";
         $path = $uri;
-        foreach (Router::$routeExts as $e => $pre) {
+        foreach (Router::$subdomainRoutes[$subdomain] as $e => $pre) {
             if (str_starts_with($uri, $pre)) {
                 $ext = $e;
                 $path = str_replace($pre, "", $uri);
