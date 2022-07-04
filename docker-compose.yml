@@ -9,3 +9,18 @@ services:
       - type: bind
         source: src/
         target: /var/www/html
+  db:
+    image: mysql:8.0
+    cap_add:
+      - SYS_NICE
+    environment:
+      - MYSQL_DATABASE=users
+      - MYSQL_ROOT_PASSWORD=toor
+    ports:
+      - '3306:3306'
+    volumes:
+      - db:/var/lib/mysql
+
+volumes:
+  db:
+    driver: local
