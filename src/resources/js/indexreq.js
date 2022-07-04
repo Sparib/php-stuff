@@ -7,7 +7,7 @@ let run = () => {
         if (req.readyState == 4 && req.status == 200) {
             resp = JSON.parse(req.responseText);
             Array.from(mutList.children).forEach(e => e.remove());
-            console.log(resp);
+            
             if (resp.success == true) {
                 for (const [k, v] of Object.entries(resp)) {
                     if (k == "success") continue;
