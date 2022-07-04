@@ -9,7 +9,9 @@ class TodoHandler {
         if (!self::$cached_todos) { 
             self::$cached_todos = [
                 new Todo("Icons look nice", true),
-                new Todo("Make api run off api subdomain instead of //"),
+                new Todo("Make api run off api subdomain instead of //", true),
+                new Todo("Also set the cross-origin header", true),
+                new Todo("Config files?"),
                 new Todo("Rewrite flask as php")
             ];
         }
