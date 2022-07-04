@@ -29,7 +29,7 @@ class Router {
 
     public static function api($apiUri, $function, $method = "GET") {
         # Check if function is actually callable
-        $uri = trim($apiUri, "/");
+        $uri = preg_replace("/<.+>/", "", trim($apiUri, "/"));
 
         if (!is_callable($function)) {
             $stringed = $function;
@@ -45,7 +45,10 @@ class Router {
             return;
         }
 
-        Router::$routes["api"][$uri] = [$function, $method];
+        if (preg_match("/<.+>/", trim($apiUri, "/")) == 1) {
+            Router::$routes["api"][$uri] = [$function, $method, true];
+        } else
+            Router::$routes["api"][$uri] = [$function, $method, false];
     }
 
     private static function loop_dir($dir, $fileName) {
@@ -89,23 +92,40 @@ class Router {
         }
 
         /*
-         *  pageInfo[0] is the path to the file (or api callable)
-         *  this is for extensions that have associated values with paths
-         *  such as the resources extension requiring a Content-Type individual to each path
+         *  $routes[<ext>][<path>][0] is the path to the file or api callable
+         * 
+         *  $routes[api][*][1] is the allowed request method
+         *  $routes[api][*][2] is an a boolean that defines if there is a path based variable
+         * 
+         *  $routes[resources][1] is an optional Content-Type
          */ 
-        foreach (Router::$routes[$ext] as $pageUri => $pageInfo) {
-            if ($path != $pageUri) continue;
 
-            if ($ext == "resources" && $pageInfo[1] != null) {
-                header("Content-Type: $pageInfo[1]");
-            }
-            
+        if (!key_exists($path, Router::$routes[$ext])) {
             if ($ext == "api") {
-                if ($_SERVER['REQUEST_METHOD'] != $pageInfo[1]) throw new InvalidMethodException();
-                $pageInfo[0](); # Runs the callable attached to an api uri
-                return [true, null];
-            } else return [true, $pageInfo[0]];
+                $pathParts = explode("/", $path);
+                $pathAfter = join("/", array_slice($pathParts, 0, count($pathParts) - 1)) . "/";
+
+                if (!key_exists($pathAfter, Router::$routes[$ext]))
+                    return [false, null];
+                else {
+                    if (!Router::$routes[$ext][$pathAfter][2]) return [false, null];
+                    if ($_SERVER['REQUEST_METHOD'] != Router::$routes[$ext][$pathAfter][1]) throw new InvalidMethodException();
+
+                    Router::$routes[$ext][$pathAfter][0](end($pathParts));
+                    return [true, null];
+                }
+            } else return [false, null];
         }
+
+        if ($ext == "resources" && Router::$routes[$ext][$path][1] != null) {
+            header("Content-Type: " . Router::$routes[$ext][$path][1]);
+        }
+        
+        if ($ext == "api") {
+            Router::$routes[$ext][$path][0]();
+            return [true, null];
+        } else
+            return [true, Router::$routes[$ext][$path][0]];
 
         return [false, null];
     }

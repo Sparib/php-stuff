@@ -11,7 +11,8 @@ class TodoHandler {
                 new Todo("Icons look nice", true),
                 new Todo("Make api run off api subdomain instead of //", true),
                 new Todo("Also set the cross-origin header", true),
-                new Todo("Config files?"),
+                new Todo("Config files?", true),
+                new Todo("Dynamic api paths", true),
                 new Todo("Rewrite flask as php")
             ];
         }
