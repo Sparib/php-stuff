@@ -12,6 +12,9 @@ class Router {
     private static $subdomainRoutes = [
         "base" => [
             "resources" => "/public"
+        ],
+        "api" => [
+            "api" => "/"
         ]
     ];
 
@@ -80,7 +83,7 @@ class Router {
         foreach (Router::$subdomainRoutes[$subdomain] as $e => $pre) {
             if (str_starts_with($uri, $pre)) {
                 $ext = $e;
-                $path = str_replace($pre, "", $uri);
+                $path = preg_replace('~^' . $pre . '~', "", $uri);
                 break;
             }
         }

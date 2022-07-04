@@ -36,7 +36,7 @@ let run = () => {
         }
     };
 
-    req.open("GET", "/api//get/todo");
+    req.open("GET", `${location.protocol}//api.${location.hostname}/get/todo`);
     req.send();
 }
 run();

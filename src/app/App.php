@@ -22,11 +22,15 @@ class App {
 
     public function run() {
         $uriParts = explode(".", $_SERVER["HTTP_HOST"]);
-        $subdomain = count($uriParts) <= 2 ? "base" : join(".", array_slice($uriParts, 0, count($uriParts) - 2));
+        if (end($uriParts) == "localhost") {
+            $this->subdomain = count($uriParts) <= 1 ? "base" : join(".", array_slice($uriParts, 0, count($uriParts) - 1));
+        } else {
+            $this->subdomain = count($uriParts) <= 2 ? "base" : join(".", array_slice($uriParts, 0, count($uriParts) - 2));
+        }
 
         $op = "http.request";
 
-        if (str_ends_with($subdomain, "api")) {
+        if (str_ends_with($this->subdomain, "api")) {
             $op = "api.request";
         } else if (str_starts_with($_SERVER["REQUEST_URI"], "/resource")) {
             $op = "resource.request";
@@ -125,7 +129,7 @@ class App {
         }
 
         $span = App::getNewTransactionSpan("router.fetch");
-        [$success, $uri] = Router::fetch($_SERVER["REQUEST_URI"], $subdomain);
+        [$success, $uri] = Router::fetch($_SERVER["REQUEST_URI"], $this->subdomain);
         App::completeTransation($span);
 
         if (!$success)

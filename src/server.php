@@ -12,6 +12,8 @@ define("__BASE_URL__", __DIR__);
     'traces_sample_rate' => 1.0
 ]);
 
+header("Access-Control-Allow-Origin: http://localhost");
+
 if ($_SERVER["REQUEST_URI"] == "/test") {
     include __BASE_URL__ . "/pages/test.php";
     return;
