@@ -1,2 +1,4 @@
 vendor/
 .vscode/
+/src/app/Configs/*.php
+!/src/app/Configs/*.example.php
