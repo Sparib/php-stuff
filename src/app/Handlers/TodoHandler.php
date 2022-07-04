@@ -13,6 +13,7 @@ class TodoHandler {
                 new Todo("Also set the cross-origin header", true),
                 new Todo("Config files?", true),
                 new Todo("Dynamic api paths", true),
+                new Todo("Add sql thing"),
                 new Todo("Rewrite flask as php")
             ];
         }
