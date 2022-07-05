@@ -14,6 +14,9 @@ class TodoHandler {
                 new Todo("Config files?", true),
                 new Todo("Dynamic api paths", true),
                 new Todo("Add sql thing", true),
+                new Todo("Rewrite apis to be better"),
+                new Todo("CLI?"),
+                new Todo("Worker"),
                 new Todo("Rewrite flask as php")
             ];
         }
