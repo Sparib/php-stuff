@@ -9,8 +9,7 @@ let run = () => {
             Array.from(mutList.children).forEach(e => e.remove());
             
             if (resp.success == true) {
-                for (const [k, v] of Object.entries(resp)) {
-                    if (k == "success") continue;
+                for (const [k, v] of Object.entries(resp.data)) {
                     let complete = typeof(v) == "boolean" && v;
 
                     let item = document.createElement("li");
@@ -36,7 +35,7 @@ let run = () => {
         }
     };
 
-    req.open("GET", `${location.protocol}//api.${location.hostname}/get/todo`);
+    req.open("GET", `/api/todo`);
     req.send();
 }
 run();

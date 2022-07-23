@@ -2,43 +2,45 @@
 
 namespace app;
 
-use app\Handlers\ErrorHandler;
-use app\Handlers\FileHandler;
-use app\Handlers\InvalidMethodException;
-use app\Internal\Router;
+use app\Internal\Handlers\ErrorHandler;
+use app\Internal\Handlers\FileHandler;
+use app\Internal\Handlers\InvalidMethodException;
 use app\Internal\Director;
-use FilesystemIterator;
+use app\Internal\Router;
 use Http\Discovery\Exception\NotFoundException;
+use app\Configs\GlobalConfig;
+use app\Internal\Handlers\CommandHandler;
+use \Attribute;
+
+enum Extensions {
+    case http;
+    case resources;
+    case api;
+}
 
 class App {
-
-    public readonly Director $director;
-
-    public readonly string $subdomain;
-
-    private readonly FileHandler $file_handler;
-    private readonly ErrorHandler $error_handler;
     private static $parentSpan = null;
 
-    public function run() {
-        $uriParts = explode(".", $_SERVER["HTTP_HOST"]);
-        if (end($uriParts) == "localhost") {
-            $this->subdomain = count($uriParts) <= 1 ? "base" : join(".", array_slice($uriParts, 0, count($uriParts) - 1));
-        } else {
-            $this->subdomain = count($uriParts) <= 2 ? "base" : join(".", array_slice($uriParts, 0, count($uriParts) - 2));
-        }
+    public static array $routeExts = ["/public" => Extensions::resources, "/api" => Extensions::api, "/" => Extensions::http];
+    public readonly Extensions $extension;
+    public readonly bool $developer;
 
+    public function run() {
         $op = "http.request";
 
-        if (str_ends_with($this->subdomain, "api")) {
-            $op = "api.request";
-        } else if (str_starts_with($_SERVER["REQUEST_URI"], "/resource")) {
-            $op = "resource.request";
+        foreach (App::$routeExts as $pre => $e) {
+            if (str_starts_with($_SERVER["REQUEST_URI"], $pre)) {
+                $op = $e->name . ".request";
+                $this->extension = $e;
+                break;
+            }
         }
+
+        $this->developer = (($_GET['dev'] ?? null) == GlobalConfig::$config['dev_key']);
 
         // Setup full transaction context
         $transactionContext = new \Sentry\Tracing\TransactionContext();
-        $transactionContext->setName('Request from local dev');
+        $transactionContext->setName('Request from ' . GlobalConfig::$config['location']);
         $transactionContext->setOp($op);
         
         $transaction = \Sentry\startTransaction($transactionContext);
@@ -48,6 +50,8 @@ class App {
         $this->setup_error_handler();
 
         $this->setup_file_handler();
+
+        Router::setup();
 
         $this->get_page();
 
@@ -85,20 +89,29 @@ class App {
     private function setup_error_handler() {
         $span = App::getNewTransactionSpan("error_handler.setup");
 
-        include_once __BASE_URL__ . "/app/Handlers/ErrorHandler.php";
-        $this->error_handler = new ErrorHandler();
-        set_exception_handler(array($this->error_handler, "global_handler"));
-        set_error_handler(array($this->error_handler, "global_error_handler"));
+        if ($this->developer) {
+            $whoops = new \Whoops\Run;
+            $whoops->pushHandler(new \Whoops\Handler\PrettyPageHandler);
+            $whoops->register();
 
-        $this->error_handler->add_handler(function(NotFoundException $e) {
+            // App::completeTransation($span);
+            // return;
+        }
+
+        include_once __BASE_URL__ . "/app/Internal/Handlers/ErrorHandler.php";
+
+        set_exception_handler("app\Internal\Handlers\ErrorHandler::global_handler");
+        set_error_handler("app\Internal\Handlers\ErrorHandler::global_error_handler");
+
+        ErrorHandler::add_handler(function(NotFoundException $e) {
             $code = 404;
-            include_once __BASE_URL__ . "/pages/error.php";
+            include Director::dir("pages") . "/error.php";
             return true;
         });
 
-        $this->error_handler->add_handler(function(InvalidMethodException $e) {
+        ErrorHandler::add_handler(function(InvalidMethodException $e) {
             $code = 405;
-            include_once __BASE_URL__ . "/pages/error.php";
+            include Director::dir("pages") . "/error.php";
             return true;
         });
 
@@ -108,44 +121,44 @@ class App {
     private function setup_file_handler() {
         $span = App::getNewTransactionSpan("file_handler.setup");
 
-        include_once __BASE_URL__ . "/app/Handlers/FileHandler.php";
-        $this->file_handler = new FileHandler();
-
-        $dirSpan = App::getNewTransactionSpan("file_handler.director");
-        $this->director = $this->file_handler->create_director();
-        App::completeTransation($dirSpan);
+        include_once __BASE_URL__ . "/app/Internal/Handlers/FileHandler.php";
 
         $includeSpan = App::getNewTransactionSpan("file_handler.include");
-        $this->file_handler->include_files();
+        FileHandler::include_files();
         App::completeTransation($includeSpan);
 
         App::completeTransation($span);
     }
 
     private function get_page() {
-        if (file_exists($this->director->dir("pages") . "/maintenance.php")) {
-            include_once $this->director->dir("pages") . "/maintenance.php";
-            return;
-        }
-
         $span = App::getNewTransactionSpan("router.fetch");
-        [$success, $uri] = Router::fetch($_SERVER["REQUEST_URI"], $this->subdomain);
+        [$success, $uri, $is_attachment] = Router::fetch($_SERVER["REQUEST_URI"]) + [false, null, false];
         App::completeTransation($span);
 
         if (!$success)
             throw new NotFoundException();
+        elseif ($this->extension == Extensions::resources)
+            echo readfile($uri);
         elseif ($uri != null)
             include_once $uri;
     }
 
-    private function loop_dir($dir) {
-        foreach (new FilesystemIterator($dir) as $t) {
-            if (preg_match("/\w*\.disabled\.\w*/", $t->getFilename())) continue;
-            if ($t->getType() === "file") {
-                include_once $t->getPathname();
-            } elseif ($t->getType() === "dir") {
-                $this->loop_dir($t->getPathname());
-            }
-        }
+    public function cli($argv) {
+        $this->setup_cli_file_handler();
+
+        CommandHandler::runCommand($argv);
+
+        // echo "\n";
+    }
+
+    private function setup_cli_file_handler() {
+        include_once __BASE_URL__ . "/app/Internal/Handlers/FileHandler.php";
+        FileHandler::include_cli_files();
     }
 }
+
+/**
+ * Attached to a method that should be called before running an api function.
+ */
+#[Attribute(ATTRIBUTE::TARGET_METHOD)]
+class Setup {}

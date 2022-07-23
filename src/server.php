@@ -3,21 +3,11 @@
 require 'vendor/autoload.php';
 
 include 'app/App.php';
+include 'app/Configs/GlobalConfig.php';
 use app\App;
+use app\Configs\GlobalConfig;
 
 define("__BASE_URL__", __DIR__);
-
-\Sentry\init([
-    'dsn' => "https://b00795da98a84a5e83ba3fca75f54ed5@sentry.morgverd.com/4",
-    'traces_sample_rate' => 1.0
-]);
-
-header("Access-Control-Allow-Origin: http://localhost");
-
-if ($_SERVER["REQUEST_URI"] == "/test") {
-    include __BASE_URL__ . "/pages/test.php";
-    return;
-}
 
 if (!function_exists('app')) {
     function app() {
@@ -27,4 +17,15 @@ if (!function_exists('app')) {
     }
 }
 
-app()->run();
+if (isset($argc))
+    app()->cli($argv);
+else {
+    \Sentry\init([
+        'dsn' => "https://b00795da98a84a5e83ba3fca75f54ed5@sentry.morgverd.com/4",
+        'traces_sample_rate' => 0
+    ]);
+
+    header("Access-Control-Allow-Origin: " . GlobalConfig::$config['host']);
+
+    app()->run();
+}

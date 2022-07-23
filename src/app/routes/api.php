@@ -1,5 +1,11 @@
 <?php
 
+use app\Configs\SpotifyConfig;
+use app\Configs\SQLConfig;
+use app\Handlers\SpotifyHandler;
+use app\Handlers\TodoHandler;
 use app\Internal\Router;
 
-Router::api("/get/todo", 'app\Handlers\TodoHandler::get_todo');
+
+Router::registerApi("spotify", SpotifyHandler::class, SpotifyConfig::class, SQLConfig::class);
+Router::registerApi("todo", TodoHandler::class);

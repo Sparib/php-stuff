@@ -2,9 +2,12 @@
 
 namespace app\Handlers;
 use app\Internal\Response;
+use app\Internal\Route;
 
 class TodoHandler {
     private static ?array $cached_todos = null;
+
+    #[Route("/")]
     public static function get_todo() {
         if (!self::$cached_todos) { 
             self::$cached_todos = [
@@ -14,10 +17,15 @@ class TodoHandler {
                 new Todo("Config files?", true),
                 new Todo("Dynamic api paths", true),
                 new Todo("Add sql thing", true),
-                new Todo("Rewrite apis to be better"),
-                new Todo("CLI?"),
-                new Todo("Worker"),
-                new Todo("Rewrite flask as php")
+                new Todo("Rewrite apis to be better", true),
+                new Todo("Also made everything more efficient", true),
+                new Todo("SQL Server", true),
+                new Todo("Rewrite flask as php", true),
+                new Todo("CLI?", true),
+                new Todo("Redis", true),
+                new Todo("Worker", true),
+                new Todo("Middleware"),
+                new Todo("Make GMod Addon")
             ];
         }
         $todos = self::$cached_todos;
@@ -25,7 +33,7 @@ class TodoHandler {
         foreach ($todos as $todo) {
             $return[$todo->task] = $todo->complete;
         }
-        Response::return_json($return);
+        Response::return_json(["data" => $return]);
     }
 }
 

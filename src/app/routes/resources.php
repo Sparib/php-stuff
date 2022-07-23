@@ -1,19 +1,20 @@
 <?php
 
-namespace routes;
+namespace app\routes;
 
 use app\Internal\Router;
+use app\Internal\Director;
 use FilesystemIterator;
 
 
-loop_dir(app()->director->dir("resources"));
+loop_dir(Director::dir("resources"));
 
 function loop_dir($dir) {
-    $types = ["css" => "text/css", "js" => "text/javascript", "images" => "image/?"];
+    $types = ["css" => "text/css", "js" => "text/javascript", "images" => "image/?", "zip" => "application/zip"];
 
     foreach (new FilesystemIterator($dir) as $f) {
         if ($f->getType() === "file") {
-            $type = explode("/", str_replace(app()->director->dir("resources") . "/", "", $dir))[0];
+            $type = explode("/", str_replace(Director::dir("resources") . "/", "", $dir))[0];
             $content_type = array_key_exists($type, $types) ? $types[$type] : null;
             
             if ($type == "images") {
