@@ -1,4 +1,4 @@
-FROM php:8.1.3-apache
+FROM php:8.2.0alpha3-apache
 
 RUN a2enmod rewrite
 RUN docker-php-ext-install mysqli
